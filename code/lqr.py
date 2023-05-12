@@ -9,13 +9,16 @@ def get_A(cart_pole_env):
     :return: the A matrix used in LQR. i.e. x_{t+1} = A * x_t + B * u_t
     '''
     g = cart_pole_env.gravity
-    pole_mass = cart_pole_env.masspole
-    cart_mass = cart_pole_env.masscart
-    pole_length = cart_pole_env.length
+    pole_mass = cart_pole_env.masspole  #m
+    cart_mass = cart_pole_env.masscart #M
+    pole_length = cart_pole_env.length #l
     dt = cart_pole_env.tau
 
-    return np.matrix([[0]])
-
+    #changes in return
+    return np.matrix(np.eye(4)+np.multiply(dt, [[0,1,0,0],
+                                        [0,0,(pole_mass*g/cart_mass),0],
+                                        [0,0,0,1],
+                                        [0,0,(g/pole_length)*(1+(pole_mass/cart_mass)),0]]))
 
 def get_B(cart_pole_env):
     '''
@@ -29,8 +32,11 @@ def get_B(cart_pole_env):
     pole_length = cart_pole_env.length
     dt = cart_pole_env.tau
 
-    return np.matrix([[0]])
-
+    # changes in return
+    return np.matrix(np.multiply(dt,[[0],
+                                [1/cart_mass],
+                                [0],
+                                [1/(cart_mass*pole_length)]]))
 
 def find_lqr_control_input(cart_pole_env):
     '''
@@ -47,22 +53,29 @@ def find_lqr_control_input(cart_pole_env):
     B = get_B(cart_pole_env)
 
     # TODO - Q and R should not be zero, find values that work, hint: all the values can be <= 1.0
+
+
+    w1=0.2 # TODO: change the value according to the results
+    w2=1 # TODO: change the value according to the results
+    w3=0.1 # TODO: change the value according to the results
+
+    # changes in Q and R
     Q = np.matrix([
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
+        [w1, 0, 0, 0],
+        [0, 0, w2, 0],
         [0, 0, 0, 0]
     ])
 
-    R = np.matrix([0])
+    R = np.matrix([w3])
 
     # TODO - you need to compute these matrices in your solution, but these are not returned.
-    Ps = []
-
+    Ps =np.matrix([])
     # TODO - these should be returned see documentation above
-    us = []
-    xs = [np.expand_dims(cart_pole_env.state, 1)]
-    Ks = []
+
+    us = [] #[np.multiply(Ks, xs)]
+    xs = [] #[np.expand_dims(cart_pole_env.state, 1)]
+    Ks = [-np.linalg.inv(np.transpose(B)@Ps@B+R)@np.transpose(B)@Ps@A]
+
 
     assert len(xs) == cart_pole_env.planning_steps + 1, "if you plan for x states there should be X+1 states here"
     assert len(us) == cart_pole_env.planning_steps, "if you plan for x states there should be X actions here"

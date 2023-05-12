@@ -31,9 +31,9 @@ class CartPoleContEnv(gym.Env):
             self.theta_threshold_radians * 2,
             np.finfo(np.float32).max])
 
-        self.observation_space = spaces.Box(-high, high, dtype=np.float32)
+        self.observation_space = spaces.Box(-high, high, dtype=np.float64)#TODO: i changed from float 32. check if ok
         high = np.array([100.0])
-        self.action_space = spaces.Box(-high, high, dtype=np.float32)
+        self.action_space = spaces.Box(-high, high, dtype=np.float64) #TODO: i changed from float 32. check if ok
 
         self.seed()
         self.viewer = None
